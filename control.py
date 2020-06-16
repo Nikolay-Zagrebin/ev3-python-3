@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+#EV3 is connecting through Wifi with the internet. Then through ssh
 from ev3dev.ev3 import * # library for controling ev3
 from time import sleep 
 import sys, termios, tty, os #for keyboard listening
