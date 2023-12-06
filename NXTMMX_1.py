@@ -1,11 +1,20 @@
 #!/usr/bin/env pybricks-micropython
 
 from pybricks.tools import wait
+import os
+
+for item in os.listdir("/sys/class/tacho-motor"):
+    rpn = open("/sys/class/tacho-motor/" + item + "/address", "r")
+    address = rpn.read()
+    address = address.replace("\n", "")
+    rpn.close()
+    print(item + " found as: " + address)
+
 
 #   ev3-ports:in1:i2c3:M2
 #            "in1:i2c3:M2"
 TACHO_MOTOR = (
-    "/sys/class/tacho-motor/motor5/"
+    "/sys/class/tacho-motor/motor4/"
 )
 
 
@@ -19,14 +28,14 @@ def print_tacho(attr):
         print(f.read().strip())
 
 
-# Resetting the Motor
+# # Resetting the Motor
 
-write_tacho("command", "reset")
+# write_tacho("command", "reset")
 
-# Position and Speed
+# # Position and Speed
 
-print_tacho("position") # looking at the position attribute
-write_tacho("position", "0") # reset position
+# print_tacho("position") # looking at the position attribute
+# write_tacho("position", "0") # reset position
 
 # Now, turn the motor one rotation by hand and read the position again…
 
@@ -40,11 +49,11 @@ write_tacho("position", "0") # reset position
 print("run-forever")
 # write_tacho("speed_sp", "500")
 # write_tacho("command", "run-forever")
-# wait(1000)
+# wait(10000)
 
 # write_tacho("speed_sp", "-1000")
 # write_tacho("command", "run-forever")
-# wait(2000)
+# wait(10000)
 # write_tacho("command", "stop")
 
 print("run-to-abs-pos")
@@ -88,36 +97,14 @@ print("hold")
 # write_tacho("position_sp", "180")
 # write_tacho("stop_action", "hold")
 # write_tacho("command", "run-to-rel-pos")
-# wait(10000)
+wait(10000)
 
 # Polarity
 print_tacho("polarity")
 
 # write_tacho("polarity", "inversed")
-write_tacho("speed_sp", "300")
-write_tacho("command", "run-forever")
-for _ in range(100):
-    print_tacho("position")
-    wait(10)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# #!/usr/bin/env python3
-# from ev3dev2.motor import LargeMotor, MediumMotor, OUTPUT_A, OUTPUT_B, SpeedPercent, MoveTank
-# from ev3dev2.sensor import INPUT_1
-# from ev3dev2.sensor.lego import TouchSensor
-# from ev3dev2.led import Leds
-
-# m = LargeMotor("in1:i2c3:M2")
-# m.on_for_rotations(SpeedPercent(100), 10)
+# write_tacho("speed_sp", "300")
+# write_tacho("command", "run-forever")
+# for _ in range(100):
+#     print_tacho("position")
+#     wait(10)
