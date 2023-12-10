@@ -46,7 +46,7 @@ yaw_base_feedb = NumericMailbox('yaw base feedback', client)
 # Write your program here.
 ev3.speaker.set_volume(volume=80, which='_all_')
 ev3.speaker.beep()
-ev3.light.on(Color.RED)
+ev3.light.off()                 #Turn the lights off on the brick
 
 client.connect(MASTER_BRICK)
 
@@ -112,14 +112,7 @@ yaw_base.hold()
 yaw_base.reset_angle(yaw_base_bt_zeroing.read())
 roll_head.hold()
 roll_head.reset_angle(roll_head_bt_zeroing.read())
-
-# if touch_yaw_base.pressed():
-#     while touch_yaw_base.pressed():
-#         yaw_base.run(-200)
-#     wait(500)
-
-# while not touch_yaw_base.pressed():
-#     yaw_base.run(200)
+ev3.light.off()                                 #Turn the lights off on the brick
 
 
 commands_bt_text.send('Initiated yaw base')
@@ -128,48 +121,12 @@ commands_bt_text.send('Initiated yaw base')
 while commands_bt_text.read() != 'Initiate roll head':
     wait(100)
 
-# while True:
-#     buttons = ev3.buttons.pressed()
-#     if Button.CENTER in buttons:
-#         break
-#     elif Button.UP in buttons:
-#         roll_head.run(500)
-#     elif Button.DOWN in buttons:
-#         roll_head.run(-500)
-#     else:
-#         roll_head.hold()
-#     wait(100)
-# roll_head.hold()
-# roll_head.reset_angle(roll_head_bt_zeroing.read())
-
-# # already on red, back off a bit for clean calibration
-# if color_roll_head.color() == Color.RED:
-#     while color_roll_head.color() == Color.RED:
-#         roll_head.run(1400)
-#     wait(200)
-
-# # start calibrating move
-# while color_roll_head.color() != Color.RED:
-#     roll_head.run(-600)
-
-# # if color_roll_head.color() != Color.RED:
-# #     print('SLAVE> DEBUG1: not on red as expected?!')
-
-# wait(400)  # @determine optimal number for this delay, or figure out how to make it adjust itself correctly
-# roll_head.hold()
-# if color_roll_head.color() != Color.RED:
-#     print('SLAVE> DEBUG2: not on red as expected?!')
-
-# roll_head.reset_angle(roll_head_bt_zeroing.read())
 
 commands_bt_text.send('Initiated roll head')
 
-wait(500)
-# indicate that we are now calibrated
-ev3.light.on(Color.ORANGE)
 
-# print(roll_head.angle())
-# print(yaw_base.angle())
+wait(500)
+
 
 while True:
     try:
