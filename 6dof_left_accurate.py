@@ -31,53 +31,34 @@ import struct
 
 ##########~~~~~~~~~~HARDWARE CONFIGURATION~~~~~~~~~~##########
 ev3 = EV3Brick()
-#yaw_base = On Right brick Port.B            #Joint number 1(theta1)
-pitch_base = Motor(Port.A)                   #Joint number 2(theta2)
-pitch_arm = Motor(Port.B)                    #Joint number 3(theta3)
-roll_arm = Motor(Port.C)                     #Joint number 4(theta4)
-yaw_arm = Motor(Port.D)                      #Joint number 5(theta5)
-#roll_head = On Right brick Port.A           #Joint number 6(theta6)
-#touch_yaw_base = On Right brick Port.S1     #Touch sensor at back of base for homing:        theta1
-# touch_pitch_base = TouchSensor(Port.S1)      #Touch sensor at back of the base for homing:    theta2
-# touch_pitch_arm = TouchSensor(Port.S2)       #Touch sensor at the side of arm for homing:     theta3
-# touch_roll_arm = TouchSensor(Port.S3)        #Touch sensor at the end of arm for homing:      theta4
-#                                            #Stall detection used for for homing:            theta5
-#color_roll_head = On Right brick Port.S2    #Color sensor at the front left side for homing: theta6
-# infra_remote = InfraredSensor(Port.S4)      #OPTIONAL: Infrared sensor for manual movements with a remote
+#yaw_base = On Right brick Port.B               #Joint number 1(theta1)
+pitch_base = Motor(Port.A)                      #Joint number 2(theta2)
+pitch_arm = Motor(Port.B)                       #Joint number 3(theta3)
+roll_arm = Motor(Port.C)                        #Joint number 4(theta4)
+yaw_arm = Motor(Port.D)                         #Joint number 5(theta5)
+#roll_head = On Right brick Port.A              #Joint number 6(theta6)
 
-th2_switch = -1  #Switching the direction of the motor for theta2     1/-1
-th3_switch = -1  #Switching the direction of the motor for theta3     1/-1
-
-
-##########~~~~~~~~~~HOMING POSITION ANGLES WHEN SENSOR ACTIVATED~~~~~~~~~~##########
-yaw_base_zeroing   =   -25   #  -35   6/05/2021  Will be send by BT
-pitch_base_zeroing = -1860   # -850  31/01/2021  -1930 on 6/05/2021  -1880 on 8/05/2021
-pitch_arm_zeroing  =   550   # -255 originally, -225 on 19/01/2021 530 on 5/05/2021
-roll_arm_zeroing   =   885   #  855  31/01/2021
-yaw_arm_zeroing    = -1040   #-1120  31/01/2021
-roll_head_zeroing  =   -40   #   50   6/05/2021  Will be send by BT   -50
-
-roll_head_zeroing_pitch_base_angle = 33         #Angle in degrees to tip forward to reach the color sensor with the head
-roll_head_zeroing_pitch_arm_angle  = 77         #Angle in degrees to tip forward to reach the color sensor with the head ###78###
+th2_switch = -1                                 #Switching the direction of the motor for theta2     1/-1
+th3_switch = -1                                 #Switching the direction of the motor for theta3     1/-1
 
 
 ##########~~~~~~~~~~LENGTH FOR ALL COMPONENTS IN 'mm'~~~~~~~~~~##########
-a1 =  165   #Height from floor to center pitch_base [Z]        [175@version1]
-a2 =  168   #Height from pitch_base to pitch_arm center [Z]    [145@version1]
-a3 =   47   #Height from pitch_arm center to the center of the arm [Z]
-a45 = 152   #Length from pitch_arm center to yaw_arm center (Center of wrist!) [X]
-a67 = 115   #Length from yaw_arm center (Center of wrist!) to front head center + desired distance in front of the head. [X]
-a345 = math.sqrt((a3 ** 2) + (a45 ** 2))     #Diagonal length from pitch_arm center to center of wrist
-phi345 = math.degrees(math.atan(a45 / a3))   #Angle for a345 to a3
+a1 =  165                                       #Height from floor to center pitch_base [Z]        [175@version1]
+a2 =  168                                       #Height from pitch_base to pitch_arm center [Z]    [145@version1]
+a3 =   47                                       #Height from pitch_arm center to the center of the arm [Z]
+a45 = 152                                       #Length from pitch_arm center to yaw_arm center (Center of wrist!) [X]
+a67 = 115                                       #Length from yaw_arm center (Center of wrist!) to front head center + desired distance in front of the head. [X]
+a345 = math.sqrt((a3 ** 2) + (a45 ** 2))        #Diagonal length from pitch_arm center to center of wrist
+phi345 = math.degrees(math.atan(a45 / a3))      #Angle for a345 to a3
 
 
 ##########~~~~~~~~~~GEARING~~~~~~~~~~##########
-yaw_base_full_rot   =  4200   #theta1   360 /  12 *140  /  12 * 12                           = 1/11.66666
-pitch_base_full_rot = 15120   #theta2   360 /  12 * 60  /   8 * 28  /   8 * 24  /  20 * 16   = 1/42
-pitch_arm_full_rot  = 10500   #theta3   360 /  12 * 60  /   8 * 28  /  12 * 20               = 1/29.16666
-roll_arm_full_rot   =  3000   #theta4   360 /  12 * 60  /  16 * 16  /  16 * 16               = 1/5            ####1800 = 1/8.333333
-yaw_arm_full_rot    =  3600   #theta5   360 /  12 * 60  /  12 * 12  /  16 * 16  /  12 * 24   = 1/10
-roll_head_full_rot  =  2520   #theta6   360 /   8 * 56  /  12 * 12  /   4 * 4                = 1/7
+yaw_base_full_rot   =  4200                     #theta1   360 /  12 *140  /  12 * 12                           = 1/11.66666
+pitch_base_full_rot = 15120                     #theta2   360 /  12 * 60  /   8 * 28  /   8 * 24  /  20 * 16   = 1/42
+pitch_arm_full_rot  = 10500                     #theta3   360 /  12 * 60  /   8 * 28  /  12 * 20               = 1/29.16666
+roll_arm_full_rot   =  3000                     #theta4   360 /  12 * 60  /  16 * 16  /  16 * 16               = 1/5            ####1800 = 1/8.333333
+yaw_arm_full_rot    =  3600                     #theta5   360 /  12 * 60  /  12 * 12  /  16 * 16  /  12 * 24   = 1/10
+roll_head_full_rot  =  2520                     #theta6   360 /   8 * 56  /  12 * 12  /   4 * 4                = 1/7
 
 yaw_base_gear   = yaw_base_full_rot   / 360
 pitch_base_gear = pitch_base_full_rot / 360
@@ -88,19 +69,19 @@ roll_head_gear  = roll_head_full_rot  / 360
 
 
 ##########~~~~~~~~~~MAXIMUM SPEED, MAXIMUM ACCELERATION, MAXIMUM POWER~~~~~~~~~~##########
-pitch_base.control.limits(800, 3600, 100)   #800, 3600, 100
-pitch_arm.control.limits( 800, 3600, 100)   #800, 3600, 100
-roll_arm.control.limits(  800, 3600, 100)   #500, 3600, 100
-yaw_arm.control.limits(   800, 3600, 100)   #800, 3600, 100
-max_speed = 800   #Override for Maximum speed for all joints. (700)
-step = 6          #Distance in mm for each step in Inverse Kinematic mode, lower = more accurate but might start shaking due to slow calculations
+pitch_base.control.limits(800, 3600, 100)       #800, 3600, 100
+pitch_arm.control.limits( 800, 3600, 100)       #800, 3600, 100
+roll_arm.control.limits(  800, 3600, 100)       #500, 3600, 100
+yaw_arm.control.limits(   800, 3600, 100)       #800, 3600, 100
+max_speed = 800                                 #Override for Maximum speed for all joints. (700)
+step = 6                                        #Distance in mm for each step in Inverse Kinematic mode, lower = more accurate but might start shaking due to slow calculations
 
 
 ##########~~~~~~~~~~MAXIMUM ACCELERATION AND MAXIMUM ANGLE TO SAY A MOVEMENT IS FINISHED~~~~~~~~~~##########
-pitch_base.control.target_tolerances(1000, 10)   #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
-pitch_arm.control.target_tolerances( 1000, 10)   #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
-roll_arm.control.target_tolerances(  1000, 10)   #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
-yaw_arm.control.target_tolerances(   1000, 10)   #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
+pitch_base.control.target_tolerances(1000, 10)          #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
+pitch_arm.control.target_tolerances( 1000, 10)          #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
+roll_arm.control.target_tolerances(  1000, 10)          #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
+yaw_arm.control.target_tolerances(   1000, 10)          #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
 
 
 ##########~~~~~~~~~~BLUETOOTH SETUP, SERVER SIDE~~~~~~~~~~##########
@@ -117,8 +98,8 @@ roll_head_feedb = NumericMailbox('roll head feedback', server)       #Mailbox wi
 
 
 ##########~~~~~~~~~~CREATING AND STARTING A TIMER, FOR INVERSE KINEMATIC SMOOTH CONTROL~~~~~~~~~~##########
-timer_movement = StopWatch()   #Create timer
-timer_movement.reset()         #Put timer back at 0, if not stopped it will just keep running but start from 0 again.
+timer_movement = StopWatch()            #Create timer
+timer_movement.reset()                  #Put timer back at 0, if not stopped it will just keep running but start from 0 again.
 
 
 ##########~~~~~~~~~~BUILDING GLOBAL VARIABLES~~~~~~~~~~##########
@@ -136,22 +117,13 @@ old_speed = int(max_speed)
 
 
 ##########~~~~~~~~~~BRICK STARTUP SETTINGS~~~~~~~~~~##########
-ev3.speaker.set_volume(volume=80, which='_all_')   #Set the volume for all sounds (speaking and beeps etc)
+ev3.speaker.set_volume(volume=80, which='_all_')                                    #Set the volume for all sounds (speaking and beeps etc)
 ev3.speaker.set_speech_options(language='en', voice='m7', speed=None, pitch=None)   #Select speaking language, and a voice (male/female)
-small_font = Font(size=6)       # 6 pixel height for text on screen
-normal_font = Font(size=10)     #10 pixel height for text on screen
-big_font = Font(size=16)        #16 pixel height for text on screen
-ev3.screen.set_font(big_font)   #Choose a preset font for writing next texts
-ev3.screen.clear()              #Make the screen empty (all pixels white)
-ev3.speaker.beep()              #Brick will make a beep sound 1 time
-ev3.light.off()                 #Turn the lights off on the brick
-
-
-##########~~~~~~~~~~CREATING A FILE THAT IS SAVED OFFLINE~~~~~~~~~~##########
-#Not used right now, it can be used to store coordinates of positions to go to, and call them back when restarting the program
-#create_file = open("saveddata.txt", "a")    #Create a file if it does not exist and open it, if it does exist just open it
-#create_file.write("")                       #Write "Nothing" to the file to have atleast 1 line in the file
-#create_file.close()                         #Close the file again, to be able to call it later again
+big_font = Font(size=16)                                                            #16 pixel height for text on screen
+ev3.screen.set_font(big_font)                                                       #Choose a preset font for writing next texts
+ev3.screen.clear()                                                                  #Make the screen empty (all pixels white)
+ev3.speaker.beep()                                                                  #Brick will make a beep sound 1 time
+ev3.light.off()                                                                     #Turn the lights off on the brick
 
 
 ##########~~~~~~~~~~DEFINE SUB-ROUTINES~~~~~~~~~~##########
@@ -504,29 +476,26 @@ wait(1000)
 
 
 ##########~~~~~~~~~~HOMING THETA2~~~~~~~~~~##########
-commands_bt_text.send('Initiate yaw base')   #Send the command for homing theta1
-yaw_base_bt_sp.send(800)                     #Send maximal speed for theta1
-roll_head_bt_sp.send(800)                    #Send maximal speed for theta6
-yaw_base_bt_zeroing.send(int(yaw_base_zeroing))
-roll_head_bt_zeroing.send(int(roll_head_zeroing))
-while commands_bt_text.read() != 'Initiated yaw base':   #Check if theta1 has finished homing
-    continue
+# commands_bt_text.send('Initiate yaw base')   #Send the command for homing theta1
+# while commands_bt_text.read() != 'Initiated yaw base':   #Check if theta1 has finished homing
+#     continue
 
 
 ##########~~~~~~~~~~HOMING THETA6~~~~~~~~~~##########
-commands_bt_text.send('Initiate roll head')     #Send the command for homing theta6 
+commands_bt_text.send('Initiate roll head')     #Send the command for homing theta6
 while commands_bt_text.read() != 'Initiated roll head':
     continue                                    #Check if theta6 has finished homing
 
 
 ##########~~~~~~~~~~ALL THETAS GO TO 0°~~~~~~~~~~##########
+yaw_base_bt_sp.send(800)                     #Send maximal speed for theta1
+roll_head_bt_sp.send(800)                    #Send maximal speed for theta6
+
 pitch_arm.reset_angle(-2245)
 pitch_base.reset_angle(8)
 yaw_arm.reset_angle(-1008)
 roll_arm.reset_angle(2)
 
-yaw_base_bt_num.send(0)
-roll_head_bt_num.send(0)
 find_position()
 wait(500)
 
