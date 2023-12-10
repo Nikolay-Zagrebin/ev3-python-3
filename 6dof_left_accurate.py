@@ -159,12 +159,7 @@ ev3.light.off()                 #Turn the lights off on the brick
 #create_file.close()                         #Close the file again, to be able to call it later again
 
 
-
 ##########~~~~~~~~~~DEFINE SUB-ROUTINES~~~~~~~~~~##########
-##########~~~~~~~~~~Scaling block for changing 0-255 PS4-remote input to range of choice~~~~~~~~~~##########
-def scale(val, src, dst):
-    return (float(val-src[0]) / (src[1]-src[0])) * (dst[1]-dst[0])+dst[0]
-
 
 ##########~~~~~~~~~~HOLD MOTOR POSITION WHEN MOVEMENT FINISHED~~~~~~~~~~##########
 def motor_braking():
@@ -205,8 +200,6 @@ def next_coordinate_linear(x_pos, y_pos, z_pos, roll, pitch, yaw, maxspeed):
         max_distance = max_rotation
 
     sub_steps = math.floor(math.fabs(math.ceil(max_distance / step)))   #Calculate amount of steps needed to reach the given end-point
-    
-    
     
     #Send each sub-step XYZ position, orientation and maxspeed
     if sub_steps <= 0: print("Position to close to previous end-point")
@@ -302,7 +295,9 @@ def next_pos(x_pos, y_pos, z_pos, roll, pitch, yaw, maxspeed):
         print(possible_angles, theta1, theta2, theta3, theta4, theta5, theta6)
         ev3.speaker.beep()
 
+
 actuation_list = []
+
 
 ##########~~~~~~~~~~CALCULATE SPEED FOR EACH MOTOR TO ARRIVE AT THE SAME TIME~~~~~~~~~~##########
 def calc_speed_motors(new_coor_list):
@@ -367,7 +362,7 @@ def calc_speed_motors(new_coor_list):
             old_coor_list[i] = float(new_coor_list[i])                              #Save current thetas as old thetas, preparing for future calculations
 
         actuation_list = [new_coor_list[0], new_coor_list[1], new_coor_list[2], new_coor_list[3], new_coor_list[4], new_coor_list[5], speed_list[0], speed_list[1], speed_list[2], speed_list[3], speed_list[4], speed_list[5]]
-        find_position() ###############################FOR BUGFIXING
+        find_position() ############################### FOR BUGFIXING
         sub_move_all_motors.start()
 
         #move_all_motors(new_coor_list[0], new_coor_list[1], new_coor_list[2], new_coor_list[3], new_coor_list[4], new_coor_list[5], speed_list[0], speed_list[1], speed_list[2], speed_list[3], speed_list[4], speed_list[5])
@@ -397,7 +392,6 @@ def move_all_motors(axis1, axis2, axis3, axis4, axis5, axis6, sp1, sp2, sp3, sp4
     roll_head_bt_sp.send( int(max_speed*1.5))
     roll_head_bt_num.send(int((axis6 * roll_head_gear) - (axis4 * 1) + (axis5 * 4 / roll_head_gear)))
     
-
 
 ##########~~~~~~~~~~FORWARD KINEMATICS FOR FINDING REALTIME XYZ POSITION~~~~~~~~~~##########
 def find_position():
@@ -450,7 +444,7 @@ def track_remote():
 sub_find_position = Thread(target=find_position)   #Create an instance for multiple threads
 #sub_find_position.start()                         #Start looping the thread for finding realtime XYZ position in the background (NOT USED)
 sub_track_remote = Thread(target=track_remote)
-sub_move_all_motors = Thread(target=move_all_motors_two)
+sub_move_all_motors = Thread(target=move_all_motors_two)                    
 
 
 ##########~~~~~~~~~~WAIT UNTIL (1) BLUETOOTH DEVICE IS CONNECTED~~~~~~~~~~##########
@@ -520,9 +514,9 @@ roll_head_bt_zeroing.send(int(roll_head_zeroing))
 # while touch_pitch_arm.pressed() == False:       #Homing theta3
 #     pitch_arm.run(-600 * th3_switch)
 # pitch_arm.hold()                                #Active brake theta3
-pitch_arm.reset_angle(pitch_arm_zeroing)        #Set motor angle for theta3 to the homing angle
+# pitch_arm.reset_angle(pitch_arm_zeroing)        #Set motor angle for theta3 to the homing angle
 
-pitch_arm.run_target(800, 0)
+# pitch_arm.run_target(800, 0)
 
 ##########~~~~~~~~~~HOMING THETA4~~~~~~~~~~##########
 while True:
@@ -541,6 +535,8 @@ while True:
         roll_arm.hold()
         yaw_arm.hold()
     wait(100)
+roll_arm.hold()                                 #Active brake theta4
+yaw_arm.hold() 
 
 # if touch_roll_arm.pressed() == True:            #If theta4 is pressing its touch sensor, make it move back until it does not touch anymore
 #     while touch_roll_arm.pressed() == True:
@@ -553,27 +549,28 @@ while True:
 # while touch_roll_arm.pressed() != True:         #Homing theta4
 #     roll_arm.run(600) #### 200
 #     yaw_arm.run(240) #### 80
-roll_arm.hold()                                 #Active brake theta4
-yaw_arm.stop()                                  #Soft brake theta5
-roll_arm.reset_angle(roll_arm_zeroing / 12 * 20)          #Set motor angle for theta4 to the homing angle
+# roll_arm.hold()                                 #Active brake theta4
+# yaw_arm.stop()                                  #Soft brake theta5
+# roll_arm.reset_angle(roll_arm_zeroing / 12 * 20)          #Set motor angle for theta4 to the homing angle
 
 
 ##########~~~~~~~~~~HOMING THETA5~~~~~~~~~~##########
-yaw_arm.run_angle(200, (roll_arm_zeroing / 12 * 20 + (roll_head_full_rot / 4)) / -5, wait=False)   #Turn theta5 to match theta4 rotations           ####*3 added
-roll_arm.run_target(800, (roll_arm_full_rot) / 4)                                        #Turn theta4 90° so theta5 can be safely zeroed
+# yaw_arm.run_angle(200, (roll_arm_zeroing / 12 * 20 + (roll_head_full_rot / 4)) / -5, wait=False)   #Turn theta5 to match theta4 rotations           ####*3 added
+# roll_arm.run_target(800, (roll_arm_full_rot) / 4)                                        #Turn theta4 90° so theta5 can be safely zeroed
 
-# yaw_arm.run_until_stalled(-600, then=Stop.BRAKE, duty_limit=40)   #Homing theta5 with stall detection, no brake at all after stall
-wait(150)                                                         #Wait 150ms for easing theta5
-yaw_arm.reset_angle(yaw_arm_zeroing)                              #Set motor angle for theta5 to the homing angle
-yaw_arm.run_target(800, - yaw_arm_full_rot / 4)                   #Theta5 go to safe position -90°
-roll_arm.run_target(800, 0)                                       #Theta4 go to safe position   0°
+# # yaw_arm.run_until_stalled(-600, then=Stop.BRAKE, duty_limit=40)   #Homing theta5 with stall detection, no brake at all after stall
+# wait(150)                                                         #Wait 150ms for easing theta5
+# yaw_arm.reset_angle(yaw_arm_zeroing)                              #Set motor angle for theta5 to the homing angle
+# yaw_arm.run_target(800, - yaw_arm_full_rot / 4)                   #Theta5 go to safe position -90°
+# roll_arm.run_target(800, 0)                                       #Theta4 go to safe position   0°
 
 
 ##########~~~~~~~~~~HOMING THETA2~~~~~~~~~~##########
 while commands_bt_text.read() != 'Initiated yaw base':   #Check if theta1 has finished homing
     continue
-yaw_base_bt_num.send(0)                                  #Theta1 go to safe position 0°
-pitch_arm.run_target(800, pitch_arm_full_rot / 8 * th3_switch)                             #Theta3 go to safe position 0°
+
+# yaw_base_bt_num.send(0)                                  #Theta1 go to safe position 0°
+# pitch_arm.run_target(800, pitch_arm_full_rot / 8 * th3_switch)                             #Theta3 go to safe position 0°
 
 # if touch_pitch_base.pressed() == True:          #If theta2 is pressing its touch sensor, make it move back until it does not touch anymore
 #     while touch_pitch_base.pressed() == True:
@@ -585,34 +582,43 @@ pitch_arm.run_target(800, pitch_arm_full_rot / 8 * th3_switch)                  
 # while touch_pitch_base.pressed() == False:      #Homing theta2
 #     pitch_base.run(400 * th2_switch)
 # pitch_base.hold()                               #Active brake theta2
-pitch_base.reset_angle(pitch_base_zeroing)      #Set motor angle for theta2 to the homing angle
-
-
+# pitch_base.reset_angle(pitch_base_zeroing)      #Set motor angle for theta2 to the homing angle
 
 
 ##########~~~~~~~~~~HOMING THETA6~~~~~~~~~~##########
-yaw_arm.run_target(800, - yaw_arm_full_rot / 4 - (360 / 4 / roll_arm_gear * yaw_arm_gear), wait=False) 
-roll_arm.run_target(800, - roll_arm_full_rot / 4)
-pitch_base.run_target(800, - pitch_base_full_rot / 360 * roll_head_zeroing_pitch_base_angle * th2_switch, wait=False)
-while True:
-    if pitch_base.angle() > 5 and th2_switch == -1 or pitch_base.angle() < 5 and th2_switch == 1:
-        pitch_arm.run_target(800, pitch_arm_full_rot / 8 * th3_switch + th3_switch * ((pitch_arm_full_rot / 360 * roll_head_zeroing_pitch_arm_angle - pitch_arm_full_rot / 8) * (pitch_base.angle() / (pitch_base_full_rot / 360 * roll_head_zeroing_pitch_base_angle))), wait=False)
-    if pitch_base.control.done() == True:       #Wait for the movement to be finished
-        break                                   #Break out of the loop
-pitch_arm.run_target(800, pitch_arm_full_rot / 360 * roll_head_zeroing_pitch_arm_angle * th3_switch)
+# yaw_arm.run_target(800, - yaw_arm_full_rot / 4 - (360 / 4 / roll_arm_gear * yaw_arm_gear), wait=False) 
+# roll_arm.run_target(800, - roll_arm_full_rot / 4)
+# pitch_base.run_target(800, - pitch_base_full_rot / 360 * roll_head_zeroing_pitch_base_angle * th2_switch, wait=False)
+# while True:
+#     if pitch_base.angle() > 5 and th2_switch == -1 or pitch_base.angle() < 5 and th2_switch == 1:
+#         pitch_arm.run_target(800, pitch_arm_full_rot / 8 * th3_switch + th3_switch * ((pitch_arm_full_rot / 360 * roll_head_zeroing_pitch_arm_angle - pitch_arm_full_rot / 8) * (pitch_base.angle() / (pitch_base_full_rot / 360 * roll_head_zeroing_pitch_base_angle))), wait=False)
+#     if pitch_base.control.done() == True:       #Wait for the movement to be finished
+#         break                                   #Break out of the loop
+# pitch_arm.run_target(800, pitch_arm_full_rot / 360 * roll_head_zeroing_pitch_arm_angle * th3_switch)
 
 commands_bt_text.send('Initiate roll head')     #Send the command for homing theta6 
 while commands_bt_text.read() != 'Initiated roll head':
     continue                                    #Check if theta6 has finished homing
-roll_head_bt_num.send(0)                        #Theta6 go to position 0°
+
+# roll_head_bt_num.send(0)                        #Theta6 go to position 0°
 
 
 ##########~~~~~~~~~~ALL THETAS GO TO 0°~~~~~~~~~~##########
-pitch_arm.run_target(800, 10, wait=False)
-pitch_base.run_target(800, 10)
-yaw_arm.run_target(800, 0, wait=False) 
-roll_arm.run_target(800, 0)
+# pitch_arm.run_target(800, 10, wait=False)
+pitch_arm.reset_angle(-2245)
+print(pitch_arm.angle())
+# pitch_base.run_target(800, 10)
+pitch_base.reset_angle(8)
+print(pitch_base.angle())
+# yaw_arm.run_target(800, 0, wait=False)
+yaw_arm.reset_angle(-1008)
+print(yaw_arm.angle())
+# roll_arm.run_target(800, 0)
+roll_arm.reset_angle(2)
+print(roll_arm.angle())
+
 yaw_base_bt_num.send(0)
+roll_head_bt_num.send(0)
 find_position()
 wait(500)
 
@@ -645,29 +651,29 @@ ev3.speaker.say("All motor positions at 0 degrees")
 
 next_coordinate_linear( 160, -100,  240,    0,    0,   -5, 700)
 # while True:
-#     next_coordinate_linear( 160, -205,  245,    0,    0,   -5, 700)
-#     next_coordinate_linear( 160,   70,  245,    0,    0,    0, 700)
-#     next_coordinate_linear( 397,   70,  120,    0,    0,    0, 700)
-#     next_coordinate_linear( 397,   70,   95,    0,    0,    0, 700)
-#     next_coordinate_linear( 397,   70,  120,    0,    0,    0, 700)
-#     next_coordinate_linear( 300,   70,  120,    0,    0,    0, 700)
-#     next_coordinate_linear( 300,   70,  245,    0,    0,    0, 700)
-#     next_coordinate_linear( 160,   70,  245,    0,    0,    0, 700)
-#     next_coordinate_linear( 160, -210,  240,    0,    0,   -5, 700) 
+next_coordinate_linear( 160, -205,  245,    0,    0,   -5, 700)
+next_coordinate_linear( 160,   70,  245,    0,    0,    0, 700)
+next_coordinate_linear( 397,   70,  120,    0,    0,    0, 700)
+next_coordinate_linear( 397,   70,   95,    0,    0,    0, 700)
+next_coordinate_linear( 397,   70,  120,    0,    0,    0, 700)
+next_coordinate_linear( 300,   70,  120,    0,    0,    0, 700)
+next_coordinate_linear( 300,   70,  245,    0,    0,    0, 700)
+next_coordinate_linear( 160,   70,  245,    0,    0,    0, 700)
+next_coordinate_linear( 160, -210,  240,    0,    0,   -5, 700) 
 
-#     wait(2000)
+wait(2000)
 
-#     next_coordinate_linear( 275, -210,  235,    0,   -5,   -5, 700) 
-#     next_coordinate_linear( 275, -210,  295,    0,   -5,   -5, 700) 
-#     next_coordinate_linear( 160, -205,  295,    0,   -5,   -5, 700)
-#     next_coordinate_linear( 160, -205,  400,    0,   -5,   -5, 700)
-#     next_coordinate_linear( 160,  150,  400,    0,   -5,    5, 700)
-#     next_coordinate_linear( 275,  150,   45,    0,    0,    0, 700)
+next_coordinate_linear( 275, -210,  235,    0,   -5,   -5, 700) 
+next_coordinate_linear( 275, -210,  295,    0,   -5,   -5, 700) 
+next_coordinate_linear( 160, -205,  295,    0,   -5,   -5, 700)
+next_coordinate_linear( 160, -205,  400,    0,   -5,   -5, 700)
+next_coordinate_linear( 160,  150,  400,    0,   -5,    5, 700)
+next_coordinate_linear( 275,  150,   45,    0,    0,    0, 700)
 
-#     next_coordinate_linear( 275,  150,  300,    0,   -5,    5, 700)
-#     next_coordinate_linear( 275, -205,  300,    0,   -5,   -5, 700)
-#     next_coordinate_linear( 275, -205,  245,    0,   -5,   -5, 700) 
-#     next_coordinate_linear( 160, -205,  245,    0,    0,   -5, 700) 
+next_coordinate_linear( 275,  150,  300,    0,   -5,    5, 700)
+next_coordinate_linear( 275, -205,  300,    0,   -5,   -5, 700)
+next_coordinate_linear( 275, -205,  245,    0,   -5,   -5, 700) 
+next_coordinate_linear( 160, -205,  245,    0,    0,   -5, 700) 
 
 
 # wait(10000000)
