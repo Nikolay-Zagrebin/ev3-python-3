@@ -4,8 +4,7 @@ from threading import Thread
 
 from pybricks.ev3devices import ColorSensor, Motor, TouchSensor
 from pybricks.hubs import EV3Brick
-from pybricks.messaging import (BluetoothMailboxClient, NumericMailbox,
-                                TextMailbox)
+from pybricks.messaging import (BluetoothMailboxClient, NumericMailbox, TextMailbox)
 from pybricks.parameters import Color, Port, Button
 from pybricks.media.ev3dev import SoundFile, Image, ImageFile, Font
 from pybricks.tools import wait
@@ -100,9 +99,19 @@ while True:
         yaw_base.run(500)
     elif Button.DOWN in buttons:
         yaw_base.run(-500)
+    elif Button.LEFT in buttons:
+        roll_head.run(-500)
+    elif Button.RIGHT in buttons:
+        roll_head.run(500)
     else:
         yaw_base.hold()
+        roll_head.hold()
     wait(100)
+
+yaw_base.hold()
+yaw_base.reset_angle(yaw_base_bt_zeroing.read())
+roll_head.hold()
+roll_head.reset_angle(roll_head_bt_zeroing.read())
 
 # if touch_yaw_base.pressed():
 #     while touch_yaw_base.pressed():
@@ -111,8 +120,6 @@ while True:
 
 # while not touch_yaw_base.pressed():
 #     yaw_base.run(200)
-yaw_base.hold()
-yaw_base.reset_angle(yaw_base_bt_zeroing.read())
 
 
 commands_bt_text.send('Initiated yaw base')
@@ -121,17 +128,19 @@ commands_bt_text.send('Initiated yaw base')
 while commands_bt_text.read() != 'Initiate roll head':
     wait(100)
 
-while True:
-    buttons = ev3.buttons.pressed()
-    if Button.CENTER in buttons:
-        break
-    elif Button.UP in buttons:
-        roll_head.run(500)
-    elif Button.DOWN in buttons:
-        roll_head.run(-500)
-    else:
-        roll_head.hold()
-    wait(100)
+# while True:
+#     buttons = ev3.buttons.pressed()
+#     if Button.CENTER in buttons:
+#         break
+#     elif Button.UP in buttons:
+#         roll_head.run(500)
+#     elif Button.DOWN in buttons:
+#         roll_head.run(-500)
+#     else:
+#         roll_head.hold()
+#     wait(100)
+# roll_head.hold()
+# roll_head.reset_angle(roll_head_bt_zeroing.read())
 
 # # already on red, back off a bit for clean calibration
 # if color_roll_head.color() == Color.RED:
@@ -147,17 +156,20 @@ while True:
 # #     print('SLAVE> DEBUG1: not on red as expected?!')
 
 # wait(400)  # @determine optimal number for this delay, or figure out how to make it adjust itself correctly
-roll_head.hold()
+# roll_head.hold()
 # if color_roll_head.color() != Color.RED:
 #     print('SLAVE> DEBUG2: not on red as expected?!')
 
-roll_head.reset_angle(roll_head_bt_zeroing.read())
+# roll_head.reset_angle(roll_head_bt_zeroing.read())
 
 commands_bt_text.send('Initiated roll head')
 
 wait(500)
 # indicate that we are now calibrated
 ev3.light.on(Color.ORANGE)
+
+# print(roll_head.angle())
+# print(yaw_base.angle())
 
 while True:
     try:
