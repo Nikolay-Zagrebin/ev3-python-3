@@ -12,21 +12,12 @@ from pybricks.tools import wait
 # This program requires LEGO EV3 MicroPython v2.0 or higher.
 # Click "Open user guide" on the EV3 extension tab for more information.
 
-# allow to pass master brick name from CLI for remote start
-if len(sys.argv) > 1:
-    MASTER_BRICK=sys.argv[1]
-else:
-    # THIS IS THE NAME USED BY THE MASTER EV3 BRICK THIS SLAVE WILL CONNECT TO
-    # BY DEFAULT IT WILL BE "ev3dev", IF YOU RENAME IT, CHANGE IT HERE. (highbaycrane)
-    MASTER_BRICK='master'
-
+MASTER_BRICK='master'
 
 # Create your objects here.
 ev3 = EV3Brick()
 roll_head = Motor(Port.A)
 yaw_base = Motor(Port.B)
-# touch_yaw_base = TouchSensor(Port.S1)
-# color_roll_head = ColorSensor(Port.S2)
 
 roll_head.control.limits(1400,3600,100)
 yaw_base.control.limits(1400,1400,100)
@@ -58,8 +49,6 @@ def move_yaw_base():
 def move_roll_head():
     while True:
         roll_head_bt_num.wait_new()
-        # print('received roll head num: {}'.format(roll_head_bt_num.read()))
-        # print('current angle: {}'.format(roll_head.angle()))
         roll_head.run_target(roll_head_bt_sp.read(), roll_head_bt_num.read(), wait=False)
 
 def control_check():
@@ -76,17 +65,12 @@ def angle_feedback():
         roll_head_feedb.send(roll_head.angle())
         wait(250)
 
-
 sub_yaw_base = Thread(target=move_yaw_base)
 sub_roll_head = Thread(target=move_roll_head)
 sub_angle_feedback = Thread(target=angle_feedback)
 sub_yaw_base.start()
 sub_roll_head.start()
 sub_angle_feedback.start()
-
-
-while commands_bt_text.read() != 'Initiate yaw base':
-    wait(100)
 
 ev3.screen.load_image(ImageFile.EV3_ICON)
 ev3.light.on(Color.ORANGE)
@@ -109,24 +93,22 @@ while True:
     wait(100)
 
 yaw_base.hold()
-yaw_base.reset_angle(yaw_base_bt_zeroing.read())
 roll_head.hold()
-roll_head.reset_angle(roll_head_bt_zeroing.read())
 ev3.light.off()                                 #Turn the lights off on the brick
 
+yaw_base.reset_angle(-25)
+roll_head.reset_angle(-40)
 
-commands_bt_text.send('Initiated yaw base')
+# while commands_bt_text.read() != 'Initiate yaw base':
+#     wait(100)
+# commands_bt_text.send('Initiated yaw base')
 
 
 while commands_bt_text.read() != 'Initiate roll head':
     wait(100)
-
-
 commands_bt_text.send('Initiated roll head')
 
-
-wait(500)
-
+wait(1000)
 
 while True:
     try:
