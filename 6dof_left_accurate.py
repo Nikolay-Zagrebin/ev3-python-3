@@ -118,10 +118,7 @@ roll_head_feedb = NumericMailbox('roll head feedback', server)       #Mailbox wi
 
 ##########~~~~~~~~~~CREATING AND STARTING A TIMER, FOR INVERSE KINEMATIC SMOOTH CONTROL~~~~~~~~~~##########
 timer_movement = StopWatch()   #Create timer
-#timer_movement.pause()        #Stop the timer (do not stop it use a # infront, this is for debugging only)
 timer_movement.reset()         #Put timer back at 0, if not stopped it will just keep running but start from 0 again.
-timer_remote = StopWatch()
-timer_remote.reset()
 
 
 ##########~~~~~~~~~~BUILDING GLOBAL VARIABLES~~~~~~~~~~##########
@@ -136,7 +133,6 @@ theta1_rot = 0
 theta4_rot = 0
 theta6_rot = 0
 old_speed = int(max_speed)
-tracking = True
 
 
 ##########~~~~~~~~~~BRICK STARTUP SETTINGS~~~~~~~~~~##########
@@ -149,7 +145,6 @@ ev3.screen.set_font(big_font)   #Choose a preset font for writing next texts
 ev3.screen.clear()              #Make the screen empty (all pixels white)
 ev3.speaker.beep()              #Brick will make a beep sound 1 time
 ev3.light.off()                 #Turn the lights off on the brick
-#ev3.screen.draw_text(4,  2, "yaw base angle: ")     #X/Y position for writing on the screen
 
 
 ##########~~~~~~~~~~CREATING A FILE THAT IS SAVED OFFLINE~~~~~~~~~~##########
@@ -362,7 +357,7 @@ def calc_speed_motors(new_coor_list):
             old_coor_list[i] = float(new_coor_list[i])                              #Save current thetas as old thetas, preparing for future calculations
 
         actuation_list = [new_coor_list[0], new_coor_list[1], new_coor_list[2], new_coor_list[3], new_coor_list[4], new_coor_list[5], speed_list[0], speed_list[1], speed_list[2], speed_list[3], speed_list[4], speed_list[5]]
-        find_position() ############################### FOR BUGFIXING
+        find_position()     ############################### FOR BUGFIXING
         sub_move_all_motors.start()
 
         #move_all_motors(new_coor_list[0], new_coor_list[1], new_coor_list[2], new_coor_list[3], new_coor_list[4], new_coor_list[5], speed_list[0], speed_list[1], speed_list[2], speed_list[3], speed_list[4], speed_list[5])
@@ -431,19 +426,11 @@ def find_position():
     -  a3 * pitbasecos * pitarmsin +  a2 * pitbasesin + a1)
 
     #print(x_pos_fork, y_pos_fork, z_pos_fork, math.degrees(yaw_base_angle), math.degrees(pitch_base_angle) - 90, math.degrees(pitch_arm_angle), math.degrees(roll_arm_angle), math.degrees(yaw_arm_angle), math.degrees(roll_head_angle))
-    
-
-##########~~~~~~~~~~TRACKING 6DOF BY PS4 REMOTE CONTROLLER OUTPUT~~~~~~~~~~##########
-def track_remote():
-    while tracking == True:
-        print(x_remote, y_remote, z_remote, roll_remote, pitch_remote, yaw_remote)
-        next_pos(int(x_remote), int(y_remote), int(z_remote), int(roll_remote), int(pitch_remote), int(yaw_remote), max_speed) 
 
 
 ##########~~~~~~~~~~CREATING MULTITHREADS~~~~~~~~~~##########
 sub_find_position = Thread(target=find_position)   #Create an instance for multiple threads
 #sub_find_position.start()                         #Start looping the thread for finding realtime XYZ position in the background (NOT USED)
-sub_track_remote = Thread(target=track_remote)
 sub_move_all_motors = Thread(target=move_all_motors_two)                    
 
 
@@ -472,53 +459,13 @@ while True:
         pitch_base.hold()
         pitch_arm.hold()
     wait(100)
-
-# while True:
-#     if infra_remote.buttons(1) == []:
-#         pitch_base.hold()
-#         pitch_arm.hold()
-#     elif infra_remote.buttons(1) == [Button.LEFT_UP]: pitch_base.run(200 * th2_switch)
-#     elif infra_remote.buttons(1) == [Button.LEFT_DOWN]: pitch_base.run(-200 * th2_switch)
-#     elif infra_remote.buttons(1) == [Button.RIGHT_UP]: pitch_arm.run(-200 * th3_switch)
-#     elif infra_remote.buttons(1) == [Button.RIGHT_DOWN]: pitch_arm.run(200 * th3_switch)
-#     elif infra_remote.buttons(1) == [Button.BEACON]: break
 pitch_base.hold()
 pitch_arm.hold()
+ev3.light.off()                 #Turn the lights off on the brick
 
-
-##########~~~~~~~~~~WAIT 1 SECOND BEFORE STARTING BLUETOOTH COMMUNICATION~~~~~~~~~~##########
 wait(1000)
 
-commands_bt_text.send('Initiate yaw base')   #Send the command for homing theta1
-yaw_base_bt_sp.send(800)                     #Send maximal speed for theta1
-roll_head_bt_sp.send(800)                    #Send maximal speed for theta6
-yaw_base_bt_zeroing.send(int(yaw_base_zeroing))
-roll_head_bt_zeroing.send(int(roll_head_zeroing))
-
-
-##########~~~~~~~~~~EV3 HAS INCREMENTAL ENCODERS IN IT'S MOTORS, SO IT'S NEEDED TO CALIBRATE EVERY STARTUP~~~~~~~~~~##########
-##########~~~~~~~~~~HOMING THETA3~~~~~~~~~~##########
-# if touch_pitch_base.pressed() == True:          #If theta2 is on his touch sensor, make it go up first to avoid a crash
-#     while touch_pitch_base.pressed() == True:
-#         pitch_base.run(-400 * th2_switch)
-#     wait(3000)
-# pitch_base.hold()
-
-# if touch_pitch_arm.pressed() == True:           #If theta3 is pressing its touch sensor, make it move forward until it does not touch anymore
-#     while touch_pitch_arm.pressed() == True:
-#         pitch_arm.run(600 * th3_switch)
-#     wait(100)
-#     pitch_arm.stop()
-#     wait(250)
-
-# while touch_pitch_arm.pressed() == False:       #Homing theta3
-#     pitch_arm.run(-600 * th3_switch)
-# pitch_arm.hold()                                #Active brake theta3
-# pitch_arm.reset_angle(pitch_arm_zeroing)        #Set motor angle for theta3 to the homing angle
-
-# pitch_arm.run_target(800, 0)
-
-##########~~~~~~~~~~HOMING THETA4~~~~~~~~~~##########
+ev3.light.on(Color.ORANGE)
 while True:
     buttons = ev3.buttons.pressed()
     if Button.CENTER in buttons:
@@ -537,85 +484,46 @@ while True:
     wait(100)
 roll_arm.hold()                                 #Active brake theta4
 yaw_arm.hold() 
+ev3.light.off()                 #Turn the lights off on the brick
 
-# if touch_roll_arm.pressed() == True:            #If theta4 is pressing its touch sensor, make it move back until it does not touch anymore
-#     while touch_roll_arm.pressed() == True:
-#         roll_arm.run(-200)                      #Turning theta4 will make theta5 and theta6 turn as well
-#         yaw_arm.run(-200)                        #Turn theta5 at 2.5x smaller speed to avoid a collision          #####-80
-#     wait(750)
-# roll_arm.stop()                                 #Soft brake theta4
-# yaw_arm.stop()                                  #Soft brake theta5
 
-# while touch_roll_arm.pressed() != True:         #Homing theta4
-#     roll_arm.run(600) #### 200
-#     yaw_arm.run(240) #### 80
-# roll_arm.hold()                                 #Active brake theta4
-# yaw_arm.stop()                                  #Soft brake theta5
-# roll_arm.reset_angle(roll_arm_zeroing / 12 * 20)          #Set motor angle for theta4 to the homing angle
+##########~~~~~~~~~~WAIT 1 SECOND BEFORE STARTING BLUETOOTH COMMUNICATION~~~~~~~~~~##########
+wait(1000)
+
+
+##########~~~~~~~~~~EV3 HAS INCREMENTAL ENCODERS IN IT'S MOTORS, SO IT'S NEEDED TO CALIBRATE EVERY STARTUP~~~~~~~~~~##########
+
+
+##########~~~~~~~~~~HOMING THETA3~~~~~~~~~~##########
+
+
+##########~~~~~~~~~~HOMING THETA4~~~~~~~~~~##########
 
 
 ##########~~~~~~~~~~HOMING THETA5~~~~~~~~~~##########
-# yaw_arm.run_angle(200, (roll_arm_zeroing / 12 * 20 + (roll_head_full_rot / 4)) / -5, wait=False)   #Turn theta5 to match theta4 rotations           ####*3 added
-# roll_arm.run_target(800, (roll_arm_full_rot) / 4)                                        #Turn theta4 90° so theta5 can be safely zeroed
-
-# # yaw_arm.run_until_stalled(-600, then=Stop.BRAKE, duty_limit=40)   #Homing theta5 with stall detection, no brake at all after stall
-# wait(150)                                                         #Wait 150ms for easing theta5
-# yaw_arm.reset_angle(yaw_arm_zeroing)                              #Set motor angle for theta5 to the homing angle
-# yaw_arm.run_target(800, - yaw_arm_full_rot / 4)                   #Theta5 go to safe position -90°
-# roll_arm.run_target(800, 0)                                       #Theta4 go to safe position   0°
 
 
 ##########~~~~~~~~~~HOMING THETA2~~~~~~~~~~##########
+commands_bt_text.send('Initiate yaw base')   #Send the command for homing theta1
+yaw_base_bt_sp.send(800)                     #Send maximal speed for theta1
+roll_head_bt_sp.send(800)                    #Send maximal speed for theta6
+yaw_base_bt_zeroing.send(int(yaw_base_zeroing))
+roll_head_bt_zeroing.send(int(roll_head_zeroing))
 while commands_bt_text.read() != 'Initiated yaw base':   #Check if theta1 has finished homing
     continue
 
-# yaw_base_bt_num.send(0)                                  #Theta1 go to safe position 0°
-# pitch_arm.run_target(800, pitch_arm_full_rot / 8 * th3_switch)                             #Theta3 go to safe position 0°
-
-# if touch_pitch_base.pressed() == True:          #If theta2 is pressing its touch sensor, make it move back until it does not touch anymore
-#     while touch_pitch_base.pressed() == True:
-#         pitch_base.run(-800 * th2_switch)
-#     wait(700)                                   #Time for running backwards
-#     pitch_base.stop()                           #Soft brake theta2
-#     wait(250)
-
-# while touch_pitch_base.pressed() == False:      #Homing theta2
-#     pitch_base.run(400 * th2_switch)
-# pitch_base.hold()                               #Active brake theta2
-# pitch_base.reset_angle(pitch_base_zeroing)      #Set motor angle for theta2 to the homing angle
-
 
 ##########~~~~~~~~~~HOMING THETA6~~~~~~~~~~##########
-# yaw_arm.run_target(800, - yaw_arm_full_rot / 4 - (360 / 4 / roll_arm_gear * yaw_arm_gear), wait=False) 
-# roll_arm.run_target(800, - roll_arm_full_rot / 4)
-# pitch_base.run_target(800, - pitch_base_full_rot / 360 * roll_head_zeroing_pitch_base_angle * th2_switch, wait=False)
-# while True:
-#     if pitch_base.angle() > 5 and th2_switch == -1 or pitch_base.angle() < 5 and th2_switch == 1:
-#         pitch_arm.run_target(800, pitch_arm_full_rot / 8 * th3_switch + th3_switch * ((pitch_arm_full_rot / 360 * roll_head_zeroing_pitch_arm_angle - pitch_arm_full_rot / 8) * (pitch_base.angle() / (pitch_base_full_rot / 360 * roll_head_zeroing_pitch_base_angle))), wait=False)
-#     if pitch_base.control.done() == True:       #Wait for the movement to be finished
-#         break                                   #Break out of the loop
-# pitch_arm.run_target(800, pitch_arm_full_rot / 360 * roll_head_zeroing_pitch_arm_angle * th3_switch)
-
 commands_bt_text.send('Initiate roll head')     #Send the command for homing theta6 
 while commands_bt_text.read() != 'Initiated roll head':
     continue                                    #Check if theta6 has finished homing
 
-# roll_head_bt_num.send(0)                        #Theta6 go to position 0°
-
 
 ##########~~~~~~~~~~ALL THETAS GO TO 0°~~~~~~~~~~##########
-# pitch_arm.run_target(800, 10, wait=False)
 pitch_arm.reset_angle(-2245)
-print(pitch_arm.angle())
-# pitch_base.run_target(800, 10)
 pitch_base.reset_angle(8)
-print(pitch_base.angle())
-# yaw_arm.run_target(800, 0, wait=False)
 yaw_arm.reset_angle(-1008)
-print(yaw_arm.angle())
-# roll_arm.run_target(800, 0)
 roll_arm.reset_angle(2)
-print(roll_arm.angle())
 
 yaw_base_bt_num.send(0)
 roll_head_bt_num.send(0)
