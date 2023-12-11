@@ -69,19 +69,19 @@ roll_head_gear  = roll_head_full_rot  / 360
 
 
 ##########~~~~~~~~~~MAXIMUM SPEED, MAXIMUM ACCELERATION, MAXIMUM POWER~~~~~~~~~~##########
-pitch_base.control.limits(800, 3600, 100)       #800, 3600, 100
-pitch_arm.control.limits( 800, 3600, 100)       #800, 3600, 100
-roll_arm.control.limits(  800, 3600, 100)       #500, 3600, 100
-yaw_arm.control.limits(   800, 3600, 100)       #800, 3600, 100
-max_speed = 800                                 #Override for Maximum speed for all joints. (700)
-step = 6                                        #Distance in mm for each step in Inverse Kinematic mode, lower = more accurate but might start shaking due to slow calculations
+pitch_base.control.limits(800, 3600, 100)                           #800, 3600, 100
+pitch_arm.control.limits( 800, 3600, 100)                           #800, 3600, 100
+roll_arm.control.limits(  800, 3600, 100)                           #500, 3600, 100
+yaw_arm.control.limits(   800, 3600, 100)                           #800, 3600, 100
+max_speed = 800                                                     #Override for Maximum speed for all joints. (700)
+step = 6                                                            #Distance in mm for each step in Inverse Kinematic mode, lower = more accurate but might start shaking due to slow calculations
 
 
 ##########~~~~~~~~~~MAXIMUM ACCELERATION AND MAXIMUM ANGLE TO SAY A MOVEMENT IS FINISHED~~~~~~~~~~##########
-pitch_base.control.target_tolerances(1000, 10)          #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
-pitch_arm.control.target_tolerances( 1000, 10)          #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
-roll_arm.control.target_tolerances(  1000, 10)          #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
-yaw_arm.control.target_tolerances(   1000, 10)          #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
+pitch_base.control.target_tolerances(1000, 10)                      #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
+pitch_arm.control.target_tolerances( 1000, 10)                      #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
+roll_arm.control.target_tolerances(  1000, 10)                      #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
+yaw_arm.control.target_tolerances(   1000, 10)                      #Allowed deviation from the target before motion is considered complete. (degrees/second, degrees) (1000, 10)
 
 
 ##########~~~~~~~~~~BLUETOOTH SETUP, SERVER SIDE~~~~~~~~~~##########
@@ -98,8 +98,8 @@ roll_head_feedb = NumericMailbox('roll head feedback', server)       #Mailbox wi
 
 
 ##########~~~~~~~~~~CREATING AND STARTING A TIMER, FOR INVERSE KINEMATIC SMOOTH CONTROL~~~~~~~~~~##########
-timer_movement = StopWatch()            #Create timer
-timer_movement.reset()                  #Put timer back at 0, if not stopped it will just keep running but start from 0 again.
+timer_movement = StopWatch()                                        #Create timer
+timer_movement.reset()                                              #Put timer back at 0, if not stopped it will just keep running but start from 0 again.
 
 
 ##########~~~~~~~~~~BUILDING GLOBAL VARIABLES~~~~~~~~~~##########
@@ -135,38 +135,39 @@ def motor_braking():
         if pitch_arm.control.done() == True: pitch_arm.hold()   
         continue
 
+
 program_start = True
 old_positions = [0, 0, 0]
+
 
 ##########~~~~~~~~~~CALCULATE AMOUNT OF STEPS NEEDED TO REACH NEXT END-POINT~~~~~~~~~~##########
 def next_coordinate_linear(x_pos, y_pos, z_pos, roll, pitch, yaw, maxspeed):
     global old_orientation
     global program_start
     global old_positions
-    step_lineair = 1   #Step counter restart at 1st
+    step_lineair = 1                                                                                            #Step counter restart at 1st
     
-    #Check if the previous end-point has been reached completely yet, if not wait for it
-    motor_braking()
+    motor_braking()                                                                                             #Check if the previous end-point has been reached completely yet, if not wait for it
 
     if program_start == True:
-        find_position()    #Perform Forward Kinematics to get current real XYZ position
-        distance_list = [x_pos - x_pos_fork, y_pos - y_pos_fork, z_pos - z_pos_fork]                           #XYZ distances
+        find_position()                                                                                         #Perform Forward Kinematics to get current real XYZ position
+        distance_list = [x_pos - x_pos_fork, y_pos - y_pos_fork, z_pos - z_pos_fork]                            #XYZ distances
         program_start = False
     else: distance_list = [x_pos - old_positions[0], y_pos - old_positions[1], z_pos - old_positions[2]]
-    step_orientation = [roll - old_orientation[0], pitch - old_orientation[1], yaw - old_orientation[2]]   #Orientation distances for roll, pitch, yaw
+    step_orientation = [roll - old_orientation[0], pitch - old_orientation[1], yaw - old_orientation[2]]        #Orientation distances for roll, pitch, yaw
     
-    if max(distance_list) >= math.fabs(min(distance_list)):             #Find the largest displacement from XYZ
+    if max(distance_list) >= math.fabs(min(distance_list)):                                                     #Find the largest displacement from XYZ
         max_distance = max(distance_list)
     else:
         max_distance = math.fabs(min(distance_list))
-    if max(step_orientation) >= math.fabs(min(step_orientation)):       #Find the largest twist from any orientation
-        max_rotation = max(step_orientation) / 2                        #Orientation movement counts as half distance displacement
+    if max(step_orientation) >= math.fabs(min(step_orientation)):                                               #Find the largest twist from any orientation
+        max_rotation = max(step_orientation) / 2                                                                #Orientation movement counts as half distance displacement
     else:
         max_rotation = math.fabs(min(step_orientation)) / 2
-    if max_distance < max_rotation:                                     #Find biggest movement to get at the end-point
+    if max_distance < max_rotation:                                                                             #Find biggest movement to get at the end-point
         max_distance = max_rotation
 
-    sub_steps = math.floor(math.fabs(math.ceil(max_distance / step)))   #Calculate amount of steps needed to reach the given end-point
+    sub_steps = math.floor(math.fabs(math.ceil(max_distance / step)))                                           #Calculate amount of steps needed to reach the given end-point
     
     #Send each sub-step XYZ position, orientation and maxspeed
     if sub_steps <= 0: print("Position to close to previous end-point")
@@ -174,8 +175,6 @@ def next_coordinate_linear(x_pos, y_pos, z_pos, roll, pitch, yaw, maxspeed):
         for i in range(-((sub_steps - 1) * step), step, step):
             next_pos(x_pos - (distance_list[0] / sub_steps) * (sub_steps - step_lineair), y_pos - (distance_list[1] / sub_steps) * (sub_steps - step_lineair), z_pos - (distance_list[2] / sub_steps) * (sub_steps - step_lineair), roll - (step_orientation[0] / sub_steps) * (sub_steps - step_lineair), pitch - (step_orientation[1] / sub_steps) * (sub_steps - step_lineair), yaw - (step_orientation[2] / sub_steps) * (sub_steps - step_lineair), maxspeed)    
             step_lineair += 1
-            #print(x_pos - (distance_list[0] / sub_steps) * (sub_steps - step_lineair), y_pos - (distance_list[1] / sub_steps) * (sub_steps - step_lineair), z_pos - (distance_list[2] / sub_steps) * (sub_steps - step_lineair), roll - (step_orientation[0] / sub_steps) * (sub_steps - step_lineair), pitch - (step_orientation[1] / sub_steps) * (sub_steps - step_lineair), yaw - (step_orientation[2] / sub_steps) * (sub_steps - step_lineair), maxspeed)
-
 
     old_orientation = [roll, pitch, yaw]
     old_positions   = [x_pos, y_pos, z_pos]
@@ -220,11 +219,9 @@ def next_pos(x_pos, y_pos, z_pos, roll, pitch, yaw, maxspeed):
 
     #Find theta6, Inverse Kinematic with quadrants
     if theta32 - pitch > 0 and theta5 != 0:
-        theta6 = math.cos(math.radians(pitch)) * math.degrees(math.asin(-math.cos(math.radians(theta32 - pitch)) * math.sin(math.radians(math.cos(math.radians(pitch)) * (theta1 + (theta1_rot * 360) - math.fmod(yaw, 360)))) / math.sin(math.radians(-theta5)))) + \
-            (math.sin(math.radians(pitch)) * (theta1 - yaw)) + roll
+        theta6 = math.cos(math.radians(pitch)) * math.degrees(math.asin(-math.cos(math.radians(theta32 - pitch)) * math.sin(math.radians(math.cos(math.radians(pitch)) * (theta1 + (theta1_rot * 360) - math.fmod(yaw, 360)))) / math.sin(math.radians(-theta5)))) + (math.sin(math.radians(pitch)) * (theta1 - yaw)) + roll
     elif theta32 - pitch < 0 and theta5 != 0:
-        theta6 = math.cos(math.radians(pitch)) * math.degrees(math.asin(-math.cos(math.radians(theta32 - pitch)) * math.sin(math.radians(math.cos(math.radians(pitch)) * (theta1 + (theta1_rot * 360) - math.fmod(yaw, 360)))) / math.sin(math.radians(theta5)))) + \
-            180 + (math.sin(math.radians(pitch)) * (theta1 + (theta1_rot * 360) - yaw)) + roll
+        theta6 = math.cos(math.radians(pitch)) * math.degrees(math.asin(-math.cos(math.radians(theta32 - pitch)) * math.sin(math.radians(math.cos(math.radians(pitch)) * (theta1 + (theta1_rot * 360) - math.fmod(yaw, 360)))) / math.sin(math.radians(theta5)))) + 180 + (math.sin(math.radians(pitch)) * (theta1 + (theta1_rot * 360) - yaw)) + roll
     elif theta1 - math.fmod(yaw, 360) < 0:
         if math.fmod(yaw, 360) == 0:
             theta6 = 270 + roll
@@ -243,13 +240,12 @@ def next_pos(x_pos, y_pos, z_pos, roll, pitch, yaw, maxspeed):
 
     #check that the values for theta2, theta3 and theta5 are within range of the mechanical capabilities
     possible_angles = "OK"
-    if theta2 > 44 or theta2 < -95: ###Max theta2 angles are 44° and -95° always
+    if theta2 > 44 or theta2 < -95:                                                                                                 ###Max theta2 angles are 44° and -95° always
         possible_angles = "Theta2 out of range"
-    elif theta2 > 8 and theta3 < -45 or theta2 <= 0 and theta3 < -78 or theta2 > 0 and theta2 <=8 and theta3 < -78 + 4 * theta2: ###Minimal theta3 angles check
+    elif theta2 > 8 and theta3 < -45 or theta2 <= 0 and theta3 < -78 or theta2 > 0 and theta2 <=8 and theta3 < -78 + 4 * theta2:    ###Minimal theta3 angles check
         possible_angles = "Theta3 to small"
-    elif theta2 >= -30 and theta3 > 75.2 or \
-        theta2 >= -49 and theta2 < -30 and theta3 > 105 + theta2:
-        possible_angles = "Theta3 to big"                            #NOT ALL LIMITS ARE DEFINED, NEED TO ADD MORE LIMITS FOR THETA3 TO PREVENT CRASHES!!!
+    elif theta2 >= -30 and theta3 > 75.2 or theta2 >= -49 and theta2 < -30 and theta3 > 105 + theta2:
+        possible_angles = "Theta3 to big"                                                                                           #NOT ALL LIMITS ARE DEFINED, NEED TO ADD MORE LIMITS FOR THETA3 TO PREVENT CRASHES!!!
     elif theta5 > 5 or theta5 < -120:
         possible_angles = "Theta5 out of range"
     
@@ -305,10 +301,10 @@ def calc_speed_motors(new_coor_list):
     #print(new_coor_list)
     
     #Waiting cycle, calculate the time it takes to perform the previous step and overlap for a smooth movement
-    while timer_movement.time() < max(move_angle_list) / old_speed * 1000 - 350: #-250ms overlap (-300 on 29/01/2021)
+    while timer_movement.time() < max(move_angle_list) / old_speed * 1000 - 350:            #-250ms overlap (-300 on 29/01/2021)
         continue
-    timer_movement.reset()       #Reset the timer to 0
-    old_speed = int(max_speed)   #Save current step speed as old speed
+    timer_movement.reset()                                                                  #Reset the timer to 0
+    old_speed = int(max_speed)                                                              #Save current step speed as old speed
 
     #Calculate how many degrees each motor should turn (absolute)
     move_angle_list[0] = math.fabs(int( move_coor_list[0] * yaw_base_gear))
@@ -329,12 +325,11 @@ def calc_speed_motors(new_coor_list):
             old_coor_list[i] = float(new_coor_list[i])                              #Save current thetas as old thetas, preparing for future calculations
 
         actuation_list = [new_coor_list[0], new_coor_list[1], new_coor_list[2], new_coor_list[3], new_coor_list[4], new_coor_list[5], speed_list[0], speed_list[1], speed_list[2], speed_list[3], speed_list[4], speed_list[5]]
-        find_position()     ############################### FOR BUGFIXING
+        find_position()                                                             ############################### FOR BUGFIXING
         sub_move_all_motors.start()
 
-        #move_all_motors(new_coor_list[0], new_coor_list[1], new_coor_list[2], new_coor_list[3], new_coor_list[4], new_coor_list[5], speed_list[0], speed_list[1], speed_list[2], speed_list[3], speed_list[4], speed_list[5])
 
-
+##########~~~~~~~~~~SEND ACTUAL MOTOR SPEED AND DESIRED POSITION~~~~~~~~~~##########
 def move_all_motors_two():
     global actuation_list
 
@@ -346,19 +341,7 @@ def move_all_motors_two():
     yaw_arm.run_target(   actuation_list[10], int((actuation_list[4] * yaw_arm_gear) + (actuation_list[3] / roll_arm_gear * 20 / 12 * yaw_arm_gear)), then=Stop.COAST, wait=False)
     roll_head_bt_sp.send( int(max_speed * 1.5))
     roll_head_bt_num.send(int((actuation_list[5] * roll_head_gear) - (actuation_list[3] * 1) + (actuation_list[4] * 4 / roll_head_gear)))
-
-
-##########~~~~~~~~~~SEND ACTUAL MOTOR SPEED AND DESIRED POSITION~~~~~~~~~~##########
-def move_all_motors(axis1, axis2, axis3, axis4, axis5, axis6, sp1, sp2, sp3, sp4, sp5, sp6):
-    yaw_base_bt_sp.send(  int(max_speed))
-    yaw_base_bt_num.send( int(axis1 * yaw_base_gear))
-    pitch_base.run_target(sp2, int(axis2 * pitch_base_gear * th2_switch), then=Stop.COAST, wait=False)
-    pitch_arm.run_target( sp3, int(axis3 * pitch_arm_gear *  th3_switch), then=Stop.COAST, wait=False)
-    roll_arm.run_target(  sp4, int(axis4 * roll_arm_gear), then=Stop.COAST, wait=False)
-    yaw_arm.run_target(   sp5, int((axis5 * yaw_arm_gear) + (axis4 / roll_arm_gear * yaw_arm_gear)), then=Stop.COAST, wait=False)
-    roll_head_bt_sp.send( int(max_speed*1.5))
-    roll_head_bt_num.send(int((axis6 * roll_head_gear) - (axis4 * 1) + (axis5 * 4 / roll_head_gear)))
-    
+ 
 
 ##########~~~~~~~~~~FORWARD KINEMATICS FOR FINDING REALTIME XYZ POSITION~~~~~~~~~~##########
 def find_position():
@@ -395,20 +378,16 @@ def find_position():
 
     z_pos_fork = round(- a67 * pitbasesin * pitarmcos * rolarmcos * yawarmsin + a67 * pitbasecos * pitarmsin * rolarmcos * yawarmsin - a67 * pitbasesin * pitarmsin * yawarmcos \
     - a67 * pitbasecos * pitarmcos * yawarmcos - a45 * pitbasesin * pitarmsin - a45 * pitbasecos * pitarmcos +  a3 * pitbasesin * pitarmcos \
-    -  a3 * pitbasecos * pitarmsin +  a2 * pitbasesin + a1)
-
-    #print(x_pos_fork, y_pos_fork, z_pos_fork, math.degrees(yaw_base_angle), math.degrees(pitch_base_angle) - 90, math.degrees(pitch_arm_angle), math.degrees(roll_arm_angle), math.degrees(yaw_arm_angle), math.degrees(roll_head_angle))
+    - a3 * pitbasecos * pitarmsin +  a2 * pitbasesin + a1)
 
 
 ##########~~~~~~~~~~CREATING MULTITHREADS~~~~~~~~~~##########
-sub_find_position = Thread(target=find_position)   #Create an instance for multiple threads
-#sub_find_position.start()                         #Start looping the thread for finding realtime XYZ position in the background (NOT USED)
 sub_move_all_motors = Thread(target=move_all_motors_two)                    
 
 
 ##########~~~~~~~~~~WAIT UNTIL (1) BLUETOOTH DEVICE IS CONNECTED~~~~~~~~~~##########
-server.wait_for_connection(1)   #Always start this server-brick first. Then start the slave-brick, or it will timeout
-ev3.speaker.say("Bluetooth connected")   #Make the brick talk (NOT USED)
+server.wait_for_connection(1)                               #Always start this server-brick first. Then start the slave-brick, or it will timeout
+ev3.speaker.say("Bluetooth connected")                      #Make the brick talk (NOT USED)
 
 
 ##########~~~~~~~~~~POSSIBLE MANUAL CONTROL WITH BEACON FOR GOING TO SAFE POSITION FOR HOMING~~~~~~~~~~##########
@@ -433,7 +412,7 @@ while True:
     wait(100)
 pitch_base.hold()
 pitch_arm.hold()
-ev3.light.off()                 #Turn the lights off on the brick
+ev3.light.off()                                 #Turn the lights off on the brick
 
 wait(1000)
 
@@ -456,7 +435,7 @@ while True:
     wait(100)
 roll_arm.hold()                                 #Active brake theta4
 yaw_arm.hold() 
-ev3.light.off()                 #Turn the lights off on the brick
+ev3.light.off()                                 #Turn the lights off on the brick
 
 
 ##########~~~~~~~~~~WAIT 1 SECOND BEFORE STARTING BLUETOOTH COMMUNICATION~~~~~~~~~~##########
@@ -520,10 +499,6 @@ ev3.speaker.say("All motor positions at 0 degrees")
 # 1) Example             X     Y     Z    Roll  Pitch  Yaw  Speed
 #next_coordinate_linear( 270,  100,  250,    0,    0,    0, 700) 
 
-# 2) Example      TH1   TH2   TH3   TH4   TH5   TH6  SP1  SP2  SP3  SP4  SP5  SP6     THETAS in real angles for the joint, SPEED minimal 50 and maximal 800
-#move_all_motors(  45,   10,  -20,   70,  -60,  180, 500, 700, 600, 600, 200, 100)
-#THETAS [1: +Counter-clockwise from top; 2: +lean backwards; 3: +tip forward; 4: +clockwise from rear; 5: +tip down to zero-point arm; 6: +clockwise from rear]
-
 #Showcase 6DoF              X     Y     Z    Roll  Pitch  Yaw  Speed
 
 next_coordinate_linear( 160, -100,  240,    0,    0,   -5, 700)
@@ -554,8 +529,6 @@ next_coordinate_linear( 160, -205,  245,    0,    0,   -5, 700)
 
 
 # wait(10000000)
-
-
 
 
 # #Demo pickup palet, move next to EV3s and return
@@ -593,14 +566,7 @@ next_coordinate_linear( 160, -205,  245,    0,    0,   -5, 700)
 #     next_coordinate_linear( 170, -205,  227,    0,   45,    0, 700)
 
 
-
-
-
-
-
 # wait(10000000)
-
-
 
 
 # #Measurement control, move lineair for 10centimeter
@@ -648,9 +614,6 @@ next_coordinate_linear( 160, -205,  245,    0,    0,   -5, 700)
 #     next_coordinate_linear( 170, -205,  227,  290,    0,    0, 700)
 #     next_coordinate_linear( 170, -205,  227,    0,    0,    0, 700)
 #     next_coordinate_linear( 170, -205,  227,    0,   45,    0, 700)
-
-
-
 
 motor_braking()
 
